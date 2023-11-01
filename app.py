@@ -1,5 +1,5 @@
 import uuid
-from flask import Flask, jsonify, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship 
 from datetime import datetime
@@ -8,6 +8,9 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Pomelo.db'
 db = SQLAlchemy(app)
 Account_ID = 1
+
+
+# Class definitions
 
 class Account(db.Model):
     __tablename__ = 'accounts'
@@ -18,6 +21,7 @@ class Account(db.Model):
 
     def __repr__(self):
         return '<Account %r>' % self.id
+
 
 class Transaction(db.Model):
     __tablename__ = 'txns'
@@ -33,6 +37,8 @@ class Transaction(db.Model):
         return '<Transaction %r>' % self.id
 
 
+# App routes for navigation
+
 @app.route('/', methods=["GET","POST"])
 def index():
     if request.method == "POST":
@@ -41,6 +47,7 @@ def index():
         account = Account.query.get(Account_ID)
         return get_txns(account.id)
     
+
 @app.route('/cancel/<string:id>')
 def cancel(id):
     try:
@@ -49,6 +56,7 @@ def cancel(id):
     except:
         return "Unable to delete transaction."
     
+
 @app.route('/settle/<string:id>', methods=["GET","POST"])
 def settle(id):
     if request.method == "POST":
@@ -57,6 +65,9 @@ def settle(id):
     else:
         txn = Transaction.query.get(id)
         return render_template("settle.html", txn=txn)
+
+
+# API for Transaction CRUD operations
 
 def create_txn(request):
     new_txn = Transaction(
@@ -79,11 +90,13 @@ def create_txn(request):
     # except:
     #     return "Unable to create transaction."
     
+
 def get_txns(account_id):
     acnt = Account.query.get(account_id)
     txns = Transaction.query.where(Transaction.account_id == account_id).\
         order_by(Transaction.date_authorized)
     return render_template("index.html", acnt=acnt, txns=txns)
+
 
 def settle_txn(id, new_amount):
     txn = Transaction.query.get_or_404(id)
@@ -108,6 +121,7 @@ def cancel_txn(id):
         acnt.payable_balance -= txn.amount
     db.session.delete(txn)
     db.session.commit()
+
 
 def validate_txn(txn:Transaction):
     acnt = Account.query.get(Account_ID)
