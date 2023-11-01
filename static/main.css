@@ -1,0 +1,80 @@
+#content {
+    font-family: 'Noto Sans', 'Trebuchet MS', sans-serif;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+}
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 8px;
+    min-width: 60%;
+}
+
+#tablehead {
+    font-weight: bold;
+}
+
+#button_wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+button {
+    min-width: 56px;
+    padding: 4px;
+    margin: 2px;
+    font-family: 'Trebuchet MS', sans-serif;
+}
+
+form {
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    margin: 12px;
+    width: 60%;
+}
+
+#account_info, #new_amount_wrapper {
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    margin: 12px;
+    width: 60%;
+}
+
+.labelInput {
+    display: flex; 
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 65%;
+    /* background-color: aqua; */
+}
+
+.info_row {
+    display: flex; 
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 65%;
+    /* background-color: aqua; */
+}
+
+select {
+    min-width: 180px;
+    padding: 6px;
+    font-family: 'Noto Sans', 'Trebuchet MS', sans-serif;
+}
+
+input {
+    min-width: 160px;
+    padding: 6px;
+    font-family: 'Noto Sans', 'Trebuchet MS', sans-serif;
+}
+
+#Submit, #Settle {
+    margin: 12px;
+    font-weight: bold;
+}

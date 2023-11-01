@@ -1,0 +1,115 @@
+{% extends 'bp.html' %}
+
+{% block head %}
+  <title>Pomelo</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+{% endblock %}
+
+{% block body %}
+
+<div id = "content">
+  <h1>Pomelo Exercise</h1>
+
+  <h3>Account Info</h3>
+  <div id="account_info">
+    <div class="info_row">
+      <p>Available Credit:</p>
+      <p>${{'%.2f' % (acnt.available_credit/100)}}</p>
+    </div>
+    <div class="info_row">
+      <p>Payable Balance:</p>
+      <p>${{'%.2f' % (acnt.payable_balance/100)}}</p>
+    </div>
+  </div>
+
+  <h3>Transaction History</h3>
+  <table>
+    <tr id="tablehead">
+      <td>ID</td>
+      <td>Type</td>
+      <td>Amount</td>
+      <td>Date Created</td>
+      <td>Date Settled</td>
+      <td>Actions</td>
+    </tr>
+  
+    {% for txn in txns %}
+      <tr>
+        <td>{{txn.id}}</td>
+        <td>{{txn.txn_type}}</td>
+        <td>{{'$%.2f' % (txn.amount / 100)}}</td>
+        <td>{{txn.date_authorized}}</td>
+        <td>{{txn.date_settled}}</td>
+        <td>
+          <div id="button_wrapper">
+            {% if not txn.date_settled %}
+            <a href="{{'/settle/%r' % txn.id}}">
+              <button>{{"Settle" if txn.txn_type == "Transaction" else "Post"}}</button>
+            </a>
+            <a href="{{'/cancel/%r' % txn.id}}">
+              <button>Cancel</button>
+            </a>
+            {% else %}
+            {{"Settled" if txn.txn_type == "Transaction" else "Posted"}}
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <form action="/", method="POST", id="input_form", autocomplete="off">
+    <h3>New Transaction</h3>
+    
+    <div class="labelInput">
+      <div><p>Transaction Type:</p></div>
+      <div>
+        <select name="txn_type" id="txn_type">
+          <option value="Transaction" selected>Transaction Authorized</option>
+          <option value="Payment">Payment Initiated</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="labelInput">
+      <p>Transaction Amount:</p>
+      <input type="number" name="amount" step="0.01" required>
+    </div>
+
+    <div class="labelInput">
+      <p>Transaction ID:</p>
+      <input type="text" name="tid" required>
+    </div>
+
+      <input type="submit" id="Submit" value="Submit">
+  </form>
+</div>
+
+<script>
+  $(function () {
+    $('#txn_type').on('change', function (event) {
+      var typ = document.getElementById("txn_type");
+      var amount = document.getElementsByName("amount")[0];
+      if (typ.value == 'Payment') {
+        amount.setAttribute('max', '-0.01');
+      } else {
+        amount.setAttribute('max', 'null');
+      }
+    });
+  });
+
+  $(function () {
+    $('#input_form').on('keydown', 'input', function (event) {
+      if (['amount', 'id'].includes($(this).attr('id'))) {
+        if (event.which == 13) {
+          $(this).parent().next().find('input').focus();
+          event.preventDefault();
+        }
+        if (event.which == 69 && $(this).attr('id') == 'amount') {
+          event.preventDefault();
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

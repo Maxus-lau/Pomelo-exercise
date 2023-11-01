@@ -1,0 +1,33 @@
+{% extends 'bp.html' %}
+
+{% block head %}
+  <title>Pomelo</title>
+{% endblock %}
+
+{% block body %}
+<div id = "content">
+    <h1>Pomelo Exercise</h1>
+    <table>
+        <tr id="tablehead">
+            <td>ID</td>
+            <td>Type</td>
+            <td>Amount</td>
+            <td>Date Created</td>
+        </tr>
+        <tr>
+            <td>{{txn.id}}</td>
+            <td>{{txn.txn_type}}</td>
+            <td>{{'$%.2f' % (txn.amount / 100)}}</td>
+            <td>{{txn.date_authorized}}</td>
+        </tr>
+    </table>
+    <form action="{{'/settle/%r' % txn.id}}", method="POST", autocomplete="off">
+        <div class="labelInput" {% if txn.txn_type == "Payment" %}style="display:none"{% endif %}>
+            <p>New transaction Amount:</p>
+            <input type="number" name="new_amount" step="0.01" value="{{txn.amount/100}}" required>
+        </div>
+        <input type="submit" value="Settle">
+    </form>
+</div>
+
+{% endblock %}
