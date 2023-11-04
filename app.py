@@ -14,6 +14,7 @@ Account_ID = 1
 
 class Account(db.Model):
     __tablename__ = 'accounts'
+
     id = db.Column(db.Integer, primary_key = True)
     available_credit = db.Column(db.Integer, nullable = False)
     payable_balance = db.Column(db.Integer, default = 0)
@@ -25,13 +26,20 @@ class Account(db.Model):
 
 class Transaction(db.Model):
     __tablename__ = 'txns'
+
     id = db.Column(db.Integer, primary_key = True)
+    version_uuid = db.mapped_column(db.String(32), nullable=False)
     amount = db.Column(db.Integer, nullable = False)
     txn_type = db.Column(db.String, nullable = False)
     account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
     account = relationship("Account", back_populates="txns")
     date_authorized = db.Column(db.DateTime, default=datetime.utcnow)
     date_settled = db.Column(db.DateTime, default=None)
+
+    __mapper_args__ = {
+        "version_id_col": version_uuid,
+        "version_id_generator": lambda version: uuid.uuid4().hex,
+    }
    
     def __repr__(self):
         return '<Transaction %r>' % self.id
@@ -53,14 +61,17 @@ def cancel(id):
     try:
         cancel_txn(id)
         return redirect('/')
-    except:
-        return "Unable to delete transaction."
+    except Exception as e:
+        return str(e)
     
 
 @app.route('/settle/<string:id>', methods=["GET","POST"])
 def settle(id):
     if request.method == "POST":
-        settle_txn(id, request.form['new_amount'])
+        try:
+            settle_txn(id, request.form['new_amount'], request.form['version_uuid'])
+        except Exception as e:
+            return str(e)
         return redirect('/')
     else:
         txn = Transaction.query.get(id)
@@ -98,8 +109,10 @@ def get_txns(account_id):
     return render_template("index.html", acnt=acnt, txns=txns)
 
 
-def settle_txn(id, new_amount):
+def settle_txn(id, new_amount, version_uuid):
     txn = Transaction.query.get_or_404(id)
+    if txn.version_uuid != version_uuid:
+        raise Exception("Please try again, transaction was recently updated.")
     acnt = Account.query.get(Account_ID)
     new_amount = int(float(new_amount)*100)
     if txn.txn_type == "Transaction":
@@ -113,8 +126,10 @@ def settle_txn(id, new_amount):
     
 
 def cancel_txn(id):
-    txn = Transaction.query.get_or_404(id)
+    txn = Transaction.query.get_or_404(id, "Transaction no longer presetn in Database")
     acnt = Account.query.get(Account_ID)
+    if txn.date_settled:
+        raise Exception("Transaction has already been settled")
     if txn.txn_type == "Transaction":
         acnt.available_credit += txn.amount
     else:

@@ -22,6 +22,7 @@
         </tr>
     </table>
     <form action="{{'/settle/%r' % txn.id}}", method="POST", autocomplete="off">
+        <input name="version_uuid" style="display:none" value="{{txn.version_uuid}}">
         <div class="labelInput" {% if txn.txn_type == "Payment" %}style="display:none"{% endif %}>
             <p>New transaction Amount:</p>
             <input type="number" name="new_amount" step="0.01" value="{{txn.amount/100}}" required>
